@@ -65,4 +65,12 @@
 	;; switch the the previous window
 	(select-window window-before-execute)))
 
+(defun tat/move-to-bottom-all ()
+  "Move the point of all current async buffers to the end.
+	Sometimes the points in async output buffers stop somewhere in the middle of the buffer, not move to the end to track the progress. Activating this function to fix it."
+  (interactive)
+  (dolist (buffer tat/buffers-list)
+	(set-window-point (get-buffer-window buffer)
+						(buffer-size (get-buffer buffer)))))
+
 (provide 'tmtxt-async-tasks)
