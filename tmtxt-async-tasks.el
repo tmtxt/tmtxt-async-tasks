@@ -59,11 +59,25 @@
 	;; run async command
 	(async-shell-command command output-buffer)
 	;; set event handler for the async process
-	(set-process-sentinel (get-buffer-process output-buffer) handler-function)
+	;; (set-process-sentinel (get-buffer-process output-buffer) handler-function)
+	(tat/set-sentinel-handler (get-buffer-process output-buffer) handler-function)
 	;; add the new async buffer to the buffer list
 	(add-to-list 'tat/buffers-list output-buffer)
 	;; switch the the previous window
 	(select-window window-before-execute)))
+
+(defun tat/set-sentinel-handler (process handler-function)
+  "Set the sentinel handler function for the input process. The handler-function will be executed before closing the result window"
+  ;; execute the handler function
+  (funcall handler-function)
+  ;; 
+  (set-process-sentinel process 'tat/close-window-handler))
+
+(defun tat/close-window-handler (process event)
+  "Close the window"
+  (when (equal (process-status process) 'exit)
+	;; get the current async buffer and window
+	(tat/close-window process)))
 
 (defun tat/move-to-bottom-all ()
   "Move the point of all current async buffers to the end.
@@ -71,6 +85,24 @@
   (interactive)
   (dolist (buffer tat/buffers-list)
 	(set-window-point (get-buffer-window buffer)
-						(buffer-size (get-buffer buffer)))))
+					  (buffer-size (get-buffer buffer)))))
+
+(defun tat/kill-all ()
+  "Kill all current async processes."
+  (interactive)
+  ;; kill all async buffer from the buffer list
+  (dolist (buffer tat/buffers-list)
+	;; get the window contains the buffer
+	(let ((window (get-buffer-window buffer)))
+	  ;; remove process sentinel
+	  (set-process-sentinel (get-buffer-process buffer) nil)
+	  ;; delete the process
+	  (delete-process (get-buffer-process buffer))
+	  ;; kill the buffer
+	  (kill-buffer buffer)
+	  ;; delete the window
+	  (delete-window window))
+	;; empty the list
+	(setq tat/buffers-list ())))
 
 (provide 'tmtxt-async-tasks)
