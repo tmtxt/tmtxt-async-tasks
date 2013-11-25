@@ -69,8 +69,9 @@
 (defun tat/set-sentinel-handler (process handler-function &rest arguments)
   "Set the sentinel handler function for the input process. The handler-function will be executed before closing the result window"
   ;; execute the handler function
-  (apply handler-function arguments)
-  ;; 
+  (when (not (equal handler-function nil))
+	(apply handler-function arguments))
+  ;; close the window after x seconds
   (set-process-sentinel process 'tat/close-window-handler))
 
 (defun tat/close-window-handler (process event)
