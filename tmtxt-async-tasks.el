@@ -39,12 +39,13 @@
 	  (run-at-time (concat tat/window-close-delay " sec")
 				   nil 'kill-buffer current-async-buffer))))
 
-(defun tat/execute-async (command command-name handler-function &rest arguments)
+(defun tat/execute-async (command command-name)
   "Execute the async shell command.
 	command: the command to execute
 	command-name: just the name for the output buffer
 	handler-function: the function for handling process
 	arguments: the arguments for passing into handler-function
+	handler function must have one argument, that is the process of the the async task
 
 	Create a new window at the bottom, execute the command and print
 	the output to that window. After finish execution, print the message to that
@@ -60,20 +61,11 @@
 	;; run async command
 	(async-shell-command command output-buffer)
 	;; set event handler for the async process
-	;; (set-process-sentinel (get-buffer-process output-buffer) handler-function)
-	(apply 'tat/set-sentinel-handler (get-buffer-process output-buffer) handler-function arguments)
+	(set-process-sentinel (get-buffer-process output-buffer) 'tat/close-window-handler)
 	;; add the new async buffer to the buffer list
 	(add-to-list 'tat/buffers-list output-buffer)
 	;; switch the the previous window
 	(select-window window-before-execute)))
-
-(defun tat/set-sentinel-handler (process handler-function &rest arguments)
-  "Set the sentinel handler function for the input process. The handler-function will be executed before closing the result window"
-  ;; execute the handler function
-  (when (not (equal handler-function nil))
-	(apply handler-function arguments))
-  ;; close the window after x seconds
-  (set-process-sentinel process 'tat/close-window-handler))
 
 (defun tat/close-window-handler (process event)
   "Close the window"
@@ -85,7 +77,7 @@
   "Interactive command for executing a shell command"
   (interactive
    (list (read-from-minibuffer "Command to execute: ")))
-  (tat/execute-async command "user-command" nil))
+  (tat/execute-async command "user-command"))
 
 (defun tat/move-to-bottom-all ()
   "Move the point of all current async buffers to the end.
