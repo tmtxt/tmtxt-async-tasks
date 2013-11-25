@@ -66,10 +66,10 @@
 	;; switch the the previous window
 	(select-window window-before-execute)))
 
-(defun tat/set-sentinel-handler (process handler-function)
+(defun tat/set-sentinel-handler (process handler-function &rest arguments)
   "Set the sentinel handler function for the input process. The handler-function will be executed before closing the result window"
   ;; execute the handler function
-  (funcall handler-function)
+  (apply handler-function arguments)
   ;; 
   (set-process-sentinel process 'tat/close-window-handler))
 
