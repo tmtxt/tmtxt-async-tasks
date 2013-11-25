@@ -1,5 +1,5 @@
 (defvar tat/window-close-delay
-  "10" "The time to show the result window after the async process finish execution, measured in second. This is a string, so if you change this value, please set it as a string.")
+  "5" "The time to show the result window after the async process finish execution, measured in second. This is a string, so if you change this value, please set it as a string.")
 
 (defvar tat/window-height
   10 "The height of the result window for the async process, measured by the number of lines. This is a number, so if you change this value, please set it as a number.")
@@ -39,11 +39,12 @@
 	  (run-at-time (concat tat/window-close-delay " sec")
 				   nil 'kill-buffer current-async-buffer))))
 
-(defun tat/execute-async (command command-name handler-function)
+(defun tat/execute-async (command command-name handler-function &rest arguments)
   "Execute the async shell command.
 	command: the command to execute
 	command-name: just the name for the output buffer
 	handler-function: the function for handling process
+	arguments: the arguments for passing into handler-function
 
 	Create a new window at the bottom, execute the command and print
 	the output to that window. After finish execution, print the message to that
@@ -60,7 +61,7 @@
 	(async-shell-command command output-buffer)
 	;; set event handler for the async process
 	;; (set-process-sentinel (get-buffer-process output-buffer) handler-function)
-	(tat/set-sentinel-handler (get-buffer-process output-buffer) handler-function)
+	(apply 'tat/set-sentinel-handler (get-buffer-process output-buffer) handler-function arguments)
 	;; add the new async buffer to the buffer list
 	(add-to-list 'tat/buffers-list output-buffer)
 	;; switch the the previous window
