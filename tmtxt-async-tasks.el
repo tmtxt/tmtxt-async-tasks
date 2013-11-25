@@ -80,6 +80,12 @@
 	;; get the current async buffer and window
 	(tat/close-window process)))
 
+(defun tat/execute-async-interactive (command)
+  "Interactive command for executing a shell command"
+  (interactive
+   (list (read-from-minibuffer "Command to execute: ")))
+  (tat/execute-async command "user-command" nil))
+
 (defun tat/move-to-bottom-all ()
   "Move the point of all current async buffers to the end.
 	Sometimes the points in async output buffers stop somewhere in the middle of the buffer, not move to the end to track the progress. Activating this function to fix it."
